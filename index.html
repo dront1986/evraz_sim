@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>Смотри не разорись. Бизнес-симуляция ЕВРАЗ</title>
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body {
+    margin: 0;
+    font-family: -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    background: linear-gradient(160deg,#1b1f27,#2c313d);
+    color: #f2f2f2;
+    min-height: 100vh;
+    display: flex; align-items: center; justify-content: center; padding: 12px;
+  }
+  .app {
+    width: 100%; max-width: 480px; background: #232a35; border-radius: 18px;
+    box-shadow: 0 10px 30px rgba(0,0,0,.5); padding: 20px; border: 1px solid #3a4150;
+  }
+  .header { display:flex; justify-content:space-between; align-items:center; margin-bottom: 14px; }
+  .header .logo { font-weight: 800; letter-spacing:1px; color:#ff7a1a; font-size:15px; }
+  .progress-wrap { background:#151920; border-radius: 10px; height: 10px; overflow:hidden; margin-bottom: 6px; }
+  .progress-bar { height: 100%; background: linear-gradient(90deg,#ff7a1a,#ffb347); width: 0%; transition: width .4s ease; }
+  .step-label { font-size: 12px; color:#9aa3b2; margin-bottom: 14px; }
+  .budget-box {
+    display:flex; justify-content:space-between; align-items:center;
+    background:#1a2029; border-radius: 12px; padding: 12px 16px; margin-bottom: 16px; border: 1px solid #313a48;
+  }
+  .budget-box .label { font-size: 12px; color:#9aa3b2; }
+  .budget-box .value { font-size: 21px; font-weight: 800; color:#63d471; }
+  .budget-box .value.neg { color:#ff5b5b; }
+  h2.title { font-size: 19px; margin: 4px 0 8px; color:#fff; }
+  p.desc { font-size: 14px; line-height:1.55; color:#c7cdd6; margin-bottom: 14px; }
+  .profession-card {
+    background: linear-gradient(135deg,#2a3548,#1e2733); border: 1px solid #3d4a5f;
+    border-left: 5px solid #4fc3f7; border-radius: 12px; padding: 12px 14px; margin-bottom: 12px;
+  }
+  .profession-card.alert { border-left-color:#ff8a4f; }
+  .profession-card .role-tag { font-size: 10.5px; letter-spacing:1px; color:#4fc3f7; font-weight:800; text-transform:uppercase; margin-bottom:4px; }
+  .profession-card.alert .role-tag { color:#ff8a4f; }
+  .profession-card .role-name { font-size: 15.5px; font-weight:800; color:#fff; margin-bottom:5px; }
+  .profession-card .role-desc { font-size: 13px; color:#c7cdd6; line-height:1.45; }
+  .glossary-box {
+    background:#241f30; border:1px solid #3a3050; border-left:5px solid #b18cff;
+    border-radius:12px; padding:11px 13px; margin-bottom:14px; font-size:12.5px; color:#e4dbff; line-height:1.5;
+  }
+  .glossary-box .g-title { font-weight:800; color:#b18cff; margin-bottom:6px; font-size:11.5px; text-transform:uppercase; letter-spacing:.5px; }
+  .glossary-box .g-item { margin-bottom:6px; }
+  .glossary-box .g-item:last-child { margin-bottom:0; }
+  .glossary-box b { color:#cbb8ff; }
+  .context-box {
+    background:#20291f; border:1px solid #35472f; border-left:5px solid #7fd858;
+    border-radius:12px; padding:11px 13px; margin-bottom:14px; font-size:13px; color:#dfe9d8; line-height:1.5;
+  }
+  .context-box b { color:#a4e88a; }
+  .note {
+    font-size: 12.5px; color:#ffb347; background:#2a2416; border:1px solid #4a3d1f;
+    border-radius:10px; padding:10px 12px; margin-bottom:14px; line-height:1.45;
+  }
+  .reality-box {
+    font-size: 12.5px; color:#cfe4ff; background:#16232e; border:1px solid #24455e;
+    border-radius:10px; padding:10px 12px; margin-bottom:14px; line-height:1.5;
+  }
+  .reality-box b { color:#7fc3ff; }
+  .mission-box {
+    font-size: 13px; color:#ffe0b3; background:#2e2013; border:1px solid #5a3f1f;
+    border-radius:12px; padding:12px 14px; margin-bottom:14px; line-height:1.5;
+  }
+  .thanks-box {
+    font-size: 13px; color:#d7ffe0; background:#1a2e1f; border:1px solid #2f5a3f;
+    border-radius:12px; padding:12px 14px; margin-bottom:14px; line-height:1.55;
+  }
+  .thanks-box .thanks-title { font-weight:800; color:#7fe89a; font-size:14.5px; margin-bottom:6px; }
+  .options { display:flex; flex-direction: column; gap: 10px; }
+  .opt-btn {
+    background:#2d3644; color:#fff; border:1px solid #414c5c; border-radius: 12px;
+    padding: 13px 15px; text-align:left; font-size: 14.5px; cursor:pointer; transition: .15s; line-height:1.4;
+    -webkit-appearance:none; appearance:none; touch-action: manipulation; width:100%;
+  }
+  .opt-btn .main-line { font-weight:700; margin-bottom:4px; }
+  .opt-btn .price-line { color:#ffb347; font-size:13px; margin-bottom:5px; }
+  .opt-btn .hint-line { color:#9aa3b2; font-size:12.5px; font-style:italic; }
+  .opt-btn:active, .opt-btn:hover { background:#3a4557; border-color:#ff7a1a; }
+  .opt-btn.disabled { opacity:.45; cursor:not-allowed; }
+  .opt-btn.disabled:active, .opt-btn.disabled:hover { background:#2d3644; border-color:#414c5c; }
+  .opt-btn.disabled .price-line { color:#ff7a7a; }
+  .result-box {
+    background:#1a2029; border-radius:14px; padding:16px; margin-bottom:16px; border-left: 5px solid #ff7a1a;
+  }
+  .result-box .choice { font-size:13px; color:#9aa3b2; margin-bottom:6px;}
+  .result-box .delta { font-size: 21px; font-weight:800; margin-bottom:8px; }
+  .result-box .delta.pos { color:#63d471; }
+  .result-box .delta.neg { color:#ff5b5b; }
+  .result-box .expl { font-size: 14px; color:#dfe4ea; line-height:1.55; }
+  .next-btn {
+    width:100%; padding:14px; border:none; border-radius: 12px;
+    background: linear-gradient(90deg,#ff7a1a,#ff9d47); color:#1b1f27; font-weight:800; font-size:15px; cursor:pointer; margin-top:6px;
+    -webkit-appearance:none; appearance:none; touch-action: manipulation;
+  }
+  .next-btn:active { opacity:.85; }
+  .next-btn.secondary {
+    background:#2d3644; color:#fff; border:1px solid #414c5c;
+  }
+  .team-input {
+    width:100%; padding:12px; border-radius:10px; border:1px solid #414c5c;
+    background:#1a2029; color:#fff; font-size:16px; margin-bottom:14px;
+    -webkit-appearance:none; appearance:none;
+  }
+  .error-text { color:#ff5b5b; font-size:13px; margin-bottom:10px; min-height:18px; }
+  .final-title { font-size:22px; font-weight:800; margin-bottom:6px; }
+  .final-sum { font-size:32px; font-weight:900; margin: 10px 0; }
+  .final-sum.pos { color:#63d471; }
+  .final-sum.neg { color:#ff5b5b; }
+  .breakdown { background:#1a2029; border-radius:12px; padding:14px; margin: 14px 0; font-size: 13px; color:#c7cdd6; }
+  .breakdown div { display:flex; justify-content:space-between; padding:4px 0; border-bottom:1px dashed #313a48;}
+  .breakdown div:last-child{ border-bottom:none; font-weight:700; color:#fff; }
+  .cost-title { font-size:15px; font-weight:800; color:#fff; margin: 18px 0 8px; }
+  .cost-box {
+    background:#1c2a1f; border:1px solid #2f4a34; border-radius:12px; padding:14px; margin-bottom:10px; font-size:13px; color:#dfe9d8;
+  }
+  .cost-box div { display:flex; justify-content:space-between; padding:4px 0; border-bottom:1px dashed #2f4a34; }
+  .cost-box div:last-child{ border-bottom:none; font-weight:800; color:#a4e88a; font-size:14px; }
+  .cost-glossary {
+    font-size: 12px; color:#dfe9d8; background:#1c2a1f; border:1px solid #2f4a34;
+    border-radius:12px; padding:11px 13px; margin-bottom:14px; line-height:1.5;
+  }
+  .cost-glossary b { color:#a4e88a; }
+  .hint { font-size:12.5px; color:#9aa3b2; text-align:center; margin-top:10px; }
+  .badge {
+    display:inline-block; padding:3px 10px; border-radius:20px; font-size:11px;
+    background:#3a4557; color:#ffb347; margin-bottom:10px; font-weight:700;
+  }
+  .decision-recap {
+    background:#1a2029; border-radius:12px; padding:11px 13px; margin-bottom:8px; font-size:12.5px; color:#c7cdd6;
+  }
+  .decision-recap .d-step { color:#4fc3f7; font-weight:800; font-size:10.5px; text-transform:uppercase; letter-spacing:.5px; margin-bottom:3px; }
+  .decision-recap .d-role { font-weight:700; color:#fff; margin-bottom:3px; }
+  .decision-recap .d-choice { color:#dfe4ea; margin-bottom:5px; }
+  .decision-recap .d-price {
+    display:inline-block; background:#20291f; border:1px solid #35472f; color:#a4e88a;
+    border-radius:8px; padding:3px 8px; font-size:11.5px; font-weight:700;
+  }
+</style>
+</head>
+<body>
+<div class="app" id="app"></div>
+
+<script>
+const START_BUDGET = 6000000;
+const BASE_DEFECT = 8;
+const DEFECT_FAIL_THRESHOLD = 45;
+const CONTRACT_FINE = 2400000;
+
+/* Пароли не хранятся в открытом виде. В файле хранится только результат
+   хеш-функции от каждого кода, поэтому в исходном коде страницы сами
+   коды доступа не написаны обычным текстом. */
+const ACCESS_HASH = 1509442;       // код для старта симуляции
+const RESTART_HASH = 1599742;      // код для повторного прохождения
+
+function simpleHash(str) {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = (hash * 31 + str.charCodeAt(i)) % 1000000007;
+  }
+  return hash;
+}
+
+function randInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+function fmt(n) { return Math.round(n).toLocaleString("ru-RU"); }
+function clamp(n, min, max) { return Math.max(min, Math.min(max, n)); }
+function costPerTonneNow(s) { return s.totalSpent / Math.max(s.volume, 1); }
+
+let state = {};
+
+function freshState() {
+  return {
+    teamName: "", budget: START_BUDGET, volume: 100, defect: BASE_DEFECT,
+    logisticsLoss: 0, storageLoss: 0, priceBonus: 0, breakdownRisk: "high",
+    oreMultiplier: 1.0, oreLabel: "среднее", heatLevel: "medium", heatLabel: "средняя",
+    reputation: 0, salePrice: 50000, step: 0, totalSpent: 0, decisionLog: [],
+    logisticsChoiceKey: "B", logisticsChoiceLabel: "собственный маршрутный поезд"
+  };
+}
+
+function oreLabelFor(mult) {
+  if (mult <= 0.7) return "высокое, окатыши премиум класса";
+  if (mult >= 1.4) return "низкое, бедная руда с примесями";
+  return "среднее, стандартный концентрат";
+}
+function heatLabelFor(level) {
+  if (level === "high") return "высокая, печь работала в форсированном режиме";
+  if (level === "low") return "низкая, печь работала в бережном режиме";
+  return "средняя, печь работала в нормальном режиме";
+}
+
+const steps = [
+  {
+    id: "sourcing", phase: "",
+    role: "Горный инженер обогатительной фабрики (ГОК)", roleTag: "Профессия 1",
+    roleDesc: "Определяет, какую руду и концентрат отправить на комбинат. Это первая точка, где закладывается будущее качество металла и будущая себестоимость тонны стали.",
+    glossary: [
+      { term:"Руда", def:"горная порода, найденная в земле, в которой содержится железо. Именно из неё в итоге получают металл." },
+      { term:"Концентрат", def:"руда, из которой на обогатительной фабрике удалили значительную часть лишней породы. Она чище и дороже, чем просто добытая руда." },
+      { term:"Окатыши", def:"маленькие плотные шарики, слепленные из измельчённой обогащённой руды и специально обожжённые, чтобы их было удобно загружать в печь." },
+      { term:"Кокс", def:"специальное топливо, которое получают из угля при сильном нагревании без доступа воздуха. Горит очень жарко, без него доменная печь работать не может." }
+    ],
+    desc: "Комбинату нужна партия сырья на квартал работы доменной печи. Цена известна точно, а вот как сырьё поведёт себя в печи, предсказать сложнее. Ваш выбор здесь определит, насколько рискованно будет форсировать плавку дальше по цепочке.",
+    options: [
+      { key:"A", label:"Бедная руда с ближнего карьера и обычный кокс", cost:-700000,
+        hint:"Дешевле всего, но нестабильный состав. Опасно комбинировать с форсированной плавкой дальше.",
+        resolve:(s)=>{
+          const d = randInt(10,28); s.defect += d; s.oreMultiplier = 1.5; s.oreLabel = oreLabelFor(1.5); s.reputation -= 1;
+          return `Содержание железа оказалось ниже нормы. Брак вырос на ${d}%. Горновому теперь стоит быть особенно осторожным с этой партией, форсированный темп резко усилит проблему.`;
+        }
+      },
+      { key:"B", label:"Стандартный концентрат от проверенного поставщика", cost:-1400000,
+        hint:"Обычная практика, предсказуемо, без крайностей.",
+        resolve:(s)=>{
+          const d = randInt(3,10); s.defect += d; s.oreMultiplier = 1.0; s.oreLabel = oreLabelFor(1.0);
+          return `Стандартное сырьё сработало предсказуемо: брак вырос на ${d}%. Горновому дальше будет работать со средним запасом прочности сырья.`;
+        }
+      },
+      { key:"C", label:"Обогащённые окатыши премиум класса", cost:-2000000,
+        hint:"Дорого, но высокое содержание железа даёт запас прочности для смелых решений дальше по цепочке.",
+        resolve:(s)=>{
+          const d = randInt(2,12); s.defect -= d; s.oreMultiplier = 0.6; s.oreLabel = oreLabelFor(0.6); s.reputation += 2;
+          return `Качественные окатыши снизили брак на ${d}%. Это даёт горновому запас прочности: даже форсированный режим будет менее рискованным с таким сырьём.`;
+        }
+      }
+    ]
+  },
+  {
+    id: "repair", phase: "",
+    role: "Слесарь ремонтник, инженер по эксплуатации оборудования", roleTag: "Профессия 2",
+    roleDesc: "Следит за техническим состоянием доменной печи. Решает, когда оборудование нужно остановить на ремонт, чтобы избежать аварии в разгар плавки. От этого решения зависит, как поведёт себя оборудование дальше.",
+    glossary: [
+      { term:"Доменная печь", def:"огромная печь высотой с многоэтажный дом, в которой из руды, кокса и других материалов получают первый жидкий металл, чугун." }
+    ],
+    desc: "Печь работает без остановки уже несколько месяцев. Плановый ремонт снижает риск аварии, но не отменяет его полностью. Цену вы знаете точно, а повезёт ли, станет известно позже.",
+    options: [
+      { key:"A", label:"Отложить ремонт", cost:0, hint:"Экономия сейчас, но риск аварии дальше очень высокий.",
+        resolve:(s)=>{ s.breakdownRisk="high"; return "Ремонт отложен. Риск аварии в ближайшее время очень высокий, около 70 процентов."; } },
+      { key:"B", label:"Частичный ремонт", cost:-600000, hint:"Снижает риск, но не убирает его.",
+        resolve:(s)=>{ s.breakdownRisk="medium"; return "Частичный ремонт выполнен. Риск аварии в ближайшее время средний, около 35 процентов."; } },
+      { key:"C", label:"Капитальный ремонт", cost:-1200000, hint:"Дорого, но риск аварии становится минимальным.",
+        resolve:(s)=>{ s.breakdownRisk="low"; s.reputation += 1; return "Капитальный ремонт выполнен. Риск аварии в ближайшее время минимальный, около 10 процентов, но не нулевой."; } }
+    ]
+  },
+  {
+    id: "pace", phase: "",
+    role: "Горновой, оператор доменной печи", roleTag: "Профессия 3",
+    roleDesc: "Управляет режимом дутья через фурмы. От темпа плавки зависит не только объём чугуна, но и его температура, а значит, насколько смело сможет действовать сталевар.",
+    glossary: [
+      { term:"Фурмы", def:"специальные отверстия в нижней части доменной печи, через которые внутрь подают горячий воздух, чтобы топливо горело сильнее." },
+      { term:"Дутьё", def:"поток горячего воздуха, который специально вдувают в печь через фурмы, чтобы ускорить процесс плавки." },
+      { term:"Чугун", def:"первый жидкий металл, который получают из руды в доменной печи. В нём много углерода, из-за этого он твёрже, но более хрупкий, чем сталь." }
+    ],
+    desc: "Форсированный режим даёт больше объёма и более горячий чугун, это пригодится сталевару, но насколько сильно вырастет брак, зависит ещё и от качества сырья, закупленного горным инженером.",
+    contextTitle: "Информация от горного инженера:",
+    context: (s)=> `Качество полученного сырья: <b>${s.oreLabel}</b>.`,
+    options: [
+      { key:"A", label:"Форсированный режим", cost:0, hint:"Больше чугуна и он горячее, но итоговый брак сильно зависит от качества руды.",
+        resolve:(s)=>{
+          s.volume = 125; s.heatLevel="high"; s.heatLabel=heatLabelFor("high");
+          const base = randInt(10,25); const d = Math.round(base * s.oreMultiplier); s.defect += d;
+          return `Объём выплавки 125 тонн, чугун получился горячим. Из-за режима дутья и качества сырья брак вырос на ${d}%. Сталевару эта высокая температура откроет более смелые варианты.`;
+        }
+      },
+      { key:"B", label:"Нормальный режим", cost:0, hint:"Стандартная, предсказуемая работа печи.",
+        resolve:(s)=>{ s.volume = 100; s.heatLevel="medium"; s.heatLabel=heatLabelFor("medium"); return "Печь отработала в стандартном режиме. Чугун средней температуры, без сюрпризов и без особых бонусов для сталевара."; } },
+      { key:"C", label:"Бережный режим", cost:0, hint:"Меньше чугуна и он холоднее, но состав стабильнее.",
+        resolve:(s)=>{
+          s.volume = 85; s.heatLevel="low"; s.heatLabel=heatLabelFor("low");
+          const d = randInt(3,10); s.defect -= d; s.reputation += 1;
+          return `Объём снизился до 85 тонн, брак уменьшился на ${d}%. Но чугун получился холодным, сталевару придётся быть осторожнее с ломом.`;
+        }
+      }
+    ]
+  },
+  { id: "event", dynamic: "event", phase: "Внезапная ситуация в цехе",
+    role: "Аварийная ремонтная бригада", roleTag: "Профессия 4",
+    roleDesc: "Экстренно устраняет неполадки оборудования прямо в цехе. Их нагрузка это прямое следствие того, насколько ответственно инженер по эксплуатации подошёл к ремонту раньше." },
+  {
+    id: "converter", phase: "",
+    role: "Сталевар, оператор кислородного конвертера", roleTag: "Профессия 5",
+    roleDesc: "Определяет состав шихты: соотношение жидкого чугуна и стального лома. Лом добавляют, чтобы поглотить избыточное тепло реакции. Чем горячее пришедший чугун, тем больше лома можно безопасно добавить.",
+    glossary: [
+      { term:"Конвертер", def:"большая печь особой грушевидной формы, в которую заливают жидкий чугун и продувают кислородом, чтобы выжечь лишний углерод и получить сталь." },
+      { term:"Шихта", def:"общее название всех материалов, которые вместе загружают в печь для одной плавки. В конвертере это смесь жидкого чугуна и металлического лома." },
+      { term:"Лом", def:"старый металл, отслуживший свой срок, например обломки старых деталей или конструкций, который собирают и переплавляют повторно вместо того, чтобы добывать новую руду." }
+    ],
+    desc: "Чем больше доля лома, тем дешевле передел, но тем труднее прогреть массу равномерно, если чугун недостаточно горячий.",
+    contextTitle: "Информация с доменной печи:",
+    context: (s)=> `Температура поступившего чугуна: <b>${s.heatLabel}</b>.`,
+    options: [
+      { key:"A", label:"Минимум лома, 5 процентов", cost:-1300000, hint:"Почти весь объём это чистый чугун, состав получается точным независимо от температуры.",
+        resolve:(s)=>{ const d = randInt(2,10); s.defect -= d; s.reputation += 1; return `Точный химический состав снизил брак на ${d}%. Безопасный вариант, не зависящий от температуры чугуна.`; } },
+      { key:"B", label:"Стандартная доля лома, 20 процентов", cost:-700000, hint:"Обычная практика цеха, результат некритично зависит от температуры.",
+        resolve:(s)=>{ const d = randInt(-3,3); s.defect += d; return d>=0 ? `Плавка прошла штатно, брак изменился на плюс ${d}%.` : `Плавка прошла даже лучше среднего, брак снизился на ${Math.abs(d)}%.`; } },
+      { key:"C", label:"Много лома, 40 процентов", cost:-250000, hint:"Самый дешёвый вариант, но его безопасность напрямую зависит от температуры чугуна, которую передал горновой.",
+        resolve:(s)=>{
+          const cfg = { high:{chance:0.60, failDefect:[10,20], failVol:[2,10]},
+                        medium:{chance:0.25, failDefect:[15,25], failVol:[5,12]},
+                        low:{chance:0.08, failDefect:[20,35], failVol:[8,18]} }[s.heatLevel];
+          if (Math.random() < cfg.chance) {
+            s.reputation += 1;
+            return `Чугун оказался достаточно горячим, чтобы компенсировать большую долю лома. Плавка прошла без штрафа.`;
+          } else {
+            const d = randInt(cfg.failDefect[0], cfg.failDefect[1]);
+            const v = randInt(cfg.failVol[0], cfg.failVol[1]);
+            s.defect += d; s.volume -= v; s.reputation -= 1;
+            return `Температуры чугуна не хватило, чтобы растворить такую долю лома, плавка переохладилась. Брак вырос на ${d}%, списано ${v} тонн металла.`;
+          }
+        }
+      }
+    ]
+  },
+  {
+    id: "quality", phase: "",
+    role: "Контролёр ОТК, инженер по качеству", roleTag: "Профессия 6",
+    roleDesc: "Проверяет готовый прокат перед отгрузкой. Именно здесь чаще всего обнаруживают весь брак, накопленный от руды до конвертера, или пропускают его к покупателю.",
+    glossary: [
+      { term:"ОТК", def:"отдел технического контроля, специальная служба на заводе, сотрудники которой проверяют, соответствует ли готовая продукция всем требованиям качества." },
+      { term:"Прокат", def:"готовые стальные изделия, например листы, балки или арматура, которые получают, пропуская горячую сталь через специальные валки, придающие ей нужную форму." }
+    ],
+    desc: "Полная проверка ОТК дорогая, но эффективность контроля должна зависеть от того, сколько брака уже накопилось на предыдущих этапах.",
+    contextTitle: "Данные лабораторного контроля:",
+    context: (s)=> `Текущий накопленный уровень брака партии: <b>${clamp(Math.round(s.defect),0,70)}%</b>.`,
+    options: [
+      { key:"A", label:"Без контроля", cost:0, hint:"Экономия полная, весь накопленный брак уйдёт покупателю без изменений.",
+        resolve:(s)=>{ const d = randInt(10,25); s.defect += d; s.reputation -= 1; return `Без проверки в партию попал дополнительный необнаруженный брак: плюс ${d}%.`; } },
+      { key:"B", label:"Выборочная проверка", cost:-400000, hint:"Ловит часть дефектов, но не все, особенно если накопленный брак уже высокий.",
+        resolve:(s)=>{ const d = randInt(0,8); s.defect += d; return d>0 ? `Часть брака всё же прошла проверку незамеченной: плюс ${d}%.` : "Выборочная проверка в этот раз сработала неплохо, пропусков не найдено."; } },
+      { key:"C", label:"Полный контроль ОТК", cost:-1000000, hint:"Дорого, но заметно чистит партию, особенно оправданно, если брак уже накопился высоким.",
+        resolve:(s)=>{ const d = randInt(8,18); s.defect -= d; s.reputation += 3; return `Полная проверка отсекла заметную часть брака: минус ${d}%.`; } }
+    ]
+  },
+  {
+    id: "logistics", phase: "",
+    role: "Логист, диспетчер по отправке грузов", roleTag: "Профессия 7",
+    roleDesc: "Организует транспортировку готовой продукции до покупателя, выбирая между сборными составами, маршрутными поездами и ускоренной отправкой. Это решение ещё пригодится вам дальше по пути.",
+    glossary: [
+      { term:"Сборный состав", def:"поезд, в котором едут вагоны с разными грузами от разных отправителей, поэтому по пути он останавливается на станциях для пересортировки." },
+      { term:"Маршрутный поезд", def:"поезд, сформированный из вагонов только одного отправителя, который идёт до одного получателя без остановок для пересортировки, поэтому быстрее и надёжнее." },
+      { term:"Экспедирование", def:"услуга, при которой специальный человек или служба сопровождает груз в пути и следит, чтобы он доехал точно и в срок." }
+    ],
+    desc: "Готовую партию нужно отгрузить по железной дороге. Дешёвый вариант рискует потерями в пути, а дорогой повышает доверие покупателя.",
+    options: [
+      { key:"A", label:"Сборный состав", cost:-300000, hint:"Дёшево, но простои и перегрузки иногда портят часть партии.",
+        resolve:(s)=>{ const l = randInt(3,15); s.logisticsLoss += l; s.reputation -= 1; s.logisticsChoiceKey="A"; s.logisticsChoiceLabel="сборный состав"; return `Из-за перегрузок в пути потеряно ${l}% партии.`; } },
+      { key:"B", label:"Собственный маршрутный поезд", cost:-700000, hint:"Надёжно, риск потерь практически исключён.",
+        resolve:(s)=>{ s.logisticsChoiceKey="B"; s.logisticsChoiceLabel="собственный маршрутный поезд"; return "Маршрутный поезд идёт без промежуточных перегрузок, груз доехал без потерь."; } },
+      { key:"C", label:"Ускоренная отправка и экспедирование", cost:-1300000, hint:"Дорого, но повышает итоговую цену продажи и даёт надёжного партнёра на случай будущих проблем в пути.",
+        resolve:(s)=>{ const b = randInt(3000,7000); s.priceBonus += b; s.reputation += 2; s.logisticsChoiceKey="C"; s.logisticsChoiceLabel="ускоренная отправка с экспедированием"; return `Покупатель оценил скорость поставки: цена продажи будет выше на ${b} рублей за тонну. Кроме того, у вас теперь есть проверенный экспедитор.`; } }
+    ]
+  },
+  {
+    id: "storage", phase: "",
+    role: "Кладовщик, инженер по защите металла от коррозии", roleTag: "Профессия 8",
+    roleDesc: "Отвечает за хранение готовой продукции: антикоррозийную обработку и условия хранения перед отправкой.",
+    glossary: [
+      { term:"Коррозия", def:"постепенное разрушение металла из-за реакции с воздухом и влагой, проще говоря, ржавление." },
+      { term:"Антикоррозийная обработка", def:"специальное покрытие или обработка, которая защищает металл от ржавления во время хранения и перевозки." }
+    ],
+    desc: "Прокат ржавеет без защиты при хранении на открытых площадках. Обработка стоит дороже, но сохраняет товарный вид и повышает цену.",
+    options: [
+      { key:"A", label:"Экономим на упаковке", cost:0, hint:"Риск коррозии части партии.",
+        resolve:(s)=>{ const l = randInt(3,15); s.storageLoss += l; s.reputation -= 1; return `Часть партии пострадала от коррозии: потери ${l}%.`; } },
+      { key:"B", label:"Стандартная упаковка", cost:-400000, hint:"Надёжно защищает груз без затрат на премиум вариант.",
+        resolve:(s)=>{ return "Партия защищена стандартной упаковкой, потерь нет."; } },
+      { key:"C", label:"Антикоррозийная обработка и крытый склад", cost:-850000, hint:"Инвестиция в товарный вид, поднимает цену продажи.",
+        resolve:(s)=>{ const b = randInt(3000,6000); s.priceBonus += b; s.reputation += 2; return `Товарный вид заметно улучшился: цена продажи выше на ${b} рублей за тонну.`; } }
+    ]
+  },
+  { id: "force_majeure", dynamic: "force_majeure", phase: "Форс-мажор" },
+  { id: "sale", dynamic: "sale", phase: "Момент продажи",
+    role: "Менеджер по продажам, коммерческий директор", roleTag: "Профессия 9",
+    roleDesc: "Ведёт переговоры с покупателями. Доступные варианты сделки напрямую зависят от того, насколько надёжно сработала вся цепочка до него, это и есть репутация цеха." }
+];
+
+function resolveEvent(s) {
+  const config = {
+    high:   { chance:0.70, budget:[800000,1400000], volume:[15,30], label:"очень высоким, около 70 процентов" },
+    medium: { chance:0.35, budget:[300000,700000],  volume:[5,15],  label:"средним, около 35 процентов" },
+    low:    { chance:0.10, budget:[100000,400000],  volume:[2,8],   label:"минимальным, около 10 процентов" }
+  };
+  const c = config[s.breakdownRisk];
+  const happened = Math.random() < c.chance;
+  if (happened) {
+    const b = randInt(c.budget[0], c.budget[1]); const v = randInt(c.volume[0], c.volume[1]);
+    s.budget -= b; s.totalSpent += b; s.volume -= v;
+    return { delta:-b, text:`Риск был ${c.label}, и печь всё же подвела. Аварийная бригада устранила неполадку, но простой и ремонт обошлись в ${fmt(b)} рублей, потеряно ${v} тонн чугуна.` };
+  } else {
+    return { delta:0, text:`Риск был ${c.label}, но в этот раз обошлось без аварии. Печь отработала смену штатно.` };
+  }
+}
+
+function reputationLabel(rep) {
+  if (rep >= 8) return "отличная: вас знают как надёжного поставщика";
+  if (rep >= 3) return "хорошая: покупатели вам доверяют";
+  if (rep <= -4) return "подорвана: постоянная экономия не осталась незамеченной";
+  return "нейтральная: обычная деловая репутация";
+}
+
+function buildSaleOptions(s) {
+  const opts = [];
+  opts.push({ key:"A", label:"Срочная продажа перекупщику", hint:"Гарантированная сделка прямо сейчас, но по низкой цене.", price:35000, guaranteed:true });
+
+  if (s.reputation <= -4) {
+    opts.push({ key:"B", label:"С трудом найденный покупатель", hint:"Из-за подорванной репутации цена ниже обычной.", price:30000, guaranteed:true });
+  } else {
+    opts.push({ key:"B", label:"Продажа по рыночной цене", hint:"Стандартная сделка со случайным оптовым покупателем.", price:50000, guaranteed:true });
+    opts.push({ key:"C", label:"Подождать более выгодного покупателя", hint:"Риск 50 на 50: либо крупная сделка по высокой цене, либо вынужденная скидка.", risky:true });
+  }
+  if (s.reputation >= 8) {
+    opts.push({ key:"D", label:"Эксклюзивный контракт с постоянным клиентом", hint:"Стабильно надёжная работа всей цепочки открыла доступ к лучшему покупателю.", price:80000, guaranteed:true });
+  }
+  return opts;
+}
+
+/* ================= ФОРС-МАЖОР ================= */
+
+function buildForceMajeureOptions(s) {
+  const repPenalty = s.reputation <= -4;
+  const opts = [];
+  opts.push({ key:"A", label:"Ждать, пока дорогу восстановят", cost:0,
+    hint:"Бесплатно, но партия будет стоять в вагонах, а срок поставки сдвинется." });
+  const costB = repPenalty ? 1300000 : 1000000;
+  opts.push({ key:"B", label:"Экстренно нанять автоколонну для объезда", cost:-costB,
+    hint:"Дорого, но результат гарантирован независимо от прошлых решений." });
+  if (s.logisticsChoiceKey === "C") {
+    opts.push({ key:"C", label:"Подключить своего экспедитора", cost:-150000,
+      hint:"Экспедитор работает с вами ещё с этапа отправки и уже знает резервный маршрут." });
+  } else {
+    const costC = repPenalty ? 700000 : 500000;
+    opts.push({ key:"C", label:"Искать экспедитора в срочном порядке", cost:-costC,
+      hint:"У вас нет постоянного партнёра по экспедированию, результат менее предсказуем." });
+  }
+  return opts;
+}
+
+function resolveForceMajeure(s, key) {
+  if (key === "A") {
+    const l = randInt(8,18);
+    s.storageLoss += l; s.reputation -= 1;
+    return { cost:0, text:`Партия простояла в вагонах дольше срока, часть проката успела пострадать от влаги: дополнительные потери ${l}%. Задержка также немного снизила доверие покупателя.` };
+  }
+  if (key === "B") {
+    s.reputation += 1;
+    return { cost:null, text:`Автоколонна объехала повреждённый участок без потерь партии. Дорогое, но полностью надёжное решение, не зависящее от прошлых договорённостей.` };
+  }
+  if (key === "C") {
+    if (s.logisticsChoiceKey === "C") {
+      s.reputation += 2;
+      return { cost:null, text:`Пригодилось решение, принятое ранее: экспедитор, которого вы уже наняли, сразу предложил резервный маршрут. Объезд обошёлся дёшево и без потерь.` };
+    } else {
+      const success = Math.random() < 0.5;
+      if (success) {
+        s.reputation += 1;
+        return { cost:null, text:`Несмотря на отсутствие постоянного партнёра, срочно найденный экспедитор справился, и партия проехала без потерь. В этот раз повезло.` };
+      } else {
+        const l = randInt(10,25);
+        s.logisticsLoss += l; s.reputation -= 1;
+        return { cost:null, text:`Срочно найденный экспедитор оказался менее надёжным, чем постоянный партнёр: часть партии повреждена в пути, потери ${l}%. Если бы раньше был выбран вариант с экспедированием, риска можно было избежать.` };
+      }
+    }
+  }
+}
+
+const app = document.getElementById("app");
+
+function renderPasswordGate(errorMsg) {
+  app.innerHTML = `
+    <div class="header"><div class="logo">ЕВРАЗ · СИМУЛЯЦИЯ</div></div>
+    <div class="badge">ДОСТУП К ЦЕХУ ОГРАНИЧЕН</div>
+    <h2 class="title">Введите код доступа</h2>
+    <p class="desc">Перед началом работы производственного участка требуется авторизация. Спросите код доступа у педагога.</p>
+    <input class="team-input" id="passInput" type="password" inputmode="numeric" placeholder="Код доступа" onkeydown="if(event.key==='Enter'){checkPassword();}" />
+    <div class="error-text">${errorMsg || ""}</div>
+    <button class="next-btn" onclick="checkPassword()">Войти</button>
+  `;
+  const inp = document.getElementById("passInput");
+  if (inp) inp.focus();
+}
+
+function checkPassword() {
+  const val = document.getElementById("passInput").value.trim();
+  if (simpleHash(val) === ACCESS_HASH) {
+    renderMissionStart();
+  } else {
+    renderPasswordGate("Неверный код доступа, попробуйте снова.");
+  }
+}
+
+function renderRestartGate(errorMsg) {
+  app.innerHTML = `
+    <div class="header"><div class="logo">ЕВРАЗ · СИМУЛЯЦИЯ</div></div>
+    <div class="badge">ПОВТОРНЫЙ ЗАПУСК</div>
+    <h2 class="title">Введите код для нового прохождения</h2>
+    <p class="desc">Чтобы пройти симуляцию заново, потребуется отдельный код. Спросите его у педагога.</p>
+    <input class="team-input" id="restartInput" type="password" inputmode="numeric" placeholder="Код для повторного запуска" onkeydown="if(event.key==='Enter'){checkRestartPassword();}" />
+    <div class="error-text">${errorMsg || ""}</div>
+    <button class="next-btn" onclick="checkRestartPassword()">Подтвердить</button>
+    <button class="next-btn secondary" onclick="renderPasswordGate()" style="margin-top:10px;">Назад</button>
+  `;
+  const inp = document.getElementById("restartInput");
+  if (inp) inp.focus();
+}
+
+function checkRestartPassword() {
+  const val = document.getElementById("restartInput").value.trim();
+  if (simpleHash(val) === RESTART_HASH) {
+    renderMissionStart();
+  } else {
+    renderRestartGate("Неверный код, попробуйте снова.");
+  }
+}
+
+function renderMissionStart() {
+  app.innerHTML = `
+    <div class="header"><div class="logo">ЕВРАЗ · СИМУЛЯЦИЯ</div></div>
+    <div class="badge">СТАРТОВЫЙ КАПИТАЛ: 6 000 000 РУБЛЕЙ</div>
+    <h2 class="title">Смотри не разорись</h2>
+    <div class="mission-box"><b>Общая задача команды:</b> провести партию стали через весь производственный цикл, от руды до покупателя, заработать как можно больше денег и увидеть, из чего на самом деле складывается цена металла.</div>
+    <div class="reality-box">Это учебная симуляция. Цепочка этапов реальна, но риски усилены, чтобы решения были заметны.</div>
+    <div class="note">Цену каждого решения вы будете знать точно, а эффект на качество и выручку станет известен только после выбора. Если всегда выбирать безопасные варианты, в среднем вы не заработаете, а скорее уйдёте в небольшой минус. Настоящую прибыль дают только взвешенные решения.</div>
+    <input class="team-input" id="teamNameInput" placeholder="Введите название вашей команды" />
+    <button class="next-btn" onclick="startGame()">Начать симуляцию</button>
+  `;
+}
+
+function startGame() {
+  const nameInput = document.getElementById("teamNameInput");
+  state = freshState();
+  state.teamName = nameInput.value.trim() || "Безымянный цех";
+  renderStep();
+}
+
+function stepHeader(suffix) {
+  const n = state.step + 1;
+  const total = steps.length;
+  return suffix ? `Шаг ${n} из ${total}. ${suffix}` : `Шаг ${n} из ${total}`;
+}
+
+function professionCardHtml(stepData, alert) {
+  return `
+    <div class="profession-card${alert ? ' alert' : ''}">
+      <div class="role-tag">${stepData.roleTag || stepData.phase || ""}</div>
+      <div class="role-name">${stepData.role}</div>
+      <div class="role-desc">${stepData.roleDesc}</div>
+    </div>
+  `;
+}
+function glossaryBoxHtml(stepData) {
+  if (!stepData.glossary || stepData.glossary.length === 0) return "";
+  const items = stepData.glossary.map(g => `<div class="g-item"><b>${g.term}</b>: ${g.def}</div>`).join("");
+  return `<div class="glossary-box"><div class="g-title">Что означают эти слова</div>${items}</div>`;
+}
+function contextBoxHtml(stepData, s) {
+  if (!stepData.context) return "";
+  return `<div class="context-box"><b>${stepData.contextTitle || "Контекст:"}</b><br>${stepData.context(s)}</div>`;
+}
+
+function renderStep() {
+  const stepData = steps[state.step];
+
+  if (stepData.dynamic === "event") { renderEventStep(); return; }
+  if (stepData.dynamic === "sale") { renderSaleStep(); return; }
+  if (stepData.dynamic === "force_majeure") { renderForceMajeureStep(); return; }
+
+  const progressPct = Math.round((state.step / steps.length) * 100);
+
+  const optionsHtml = stepData.options.map(opt => {
+    const disabled = opt.cost < 0 && state.budget < Math.abs(opt.cost);
+    return `
+    <button class="opt-btn${disabled ? ' disabled' : ''}" ${disabled ? 'data-dis="1"' : `onclick="chooseOption('${opt.key}')"`}>
+      <div class="main-line">${opt.key}) ${opt.label}</div>
+      <div class="price-line">Цена: ${opt.cost === 0 ? "0 рублей" : fmt(opt.cost) + " рублей"}${disabled ? " — не хватает средств" : ""}</div>
+      <div class="hint-line">${opt.hint}</div>
+    </button>
+  `;
+  }).join("");
+
+  app.innerHTML = `
+    <div class="header"><div class="logo">${state.teamName.toUpperCase()}</div></div>
+    <div class="progress-wrap"><div class="progress-bar" style="width:${progressPct}%"></div></div>
+    <div class="step-label">${stepHeader(stepData.phase)}</div>
+    ${professionCardHtml(stepData)}
+    ${glossaryBoxHtml(stepData)}
+    ${contextBoxHtml(stepData, state)}
+    <div class="budget-box">
+      <div><div class="label">Текущий бюджет</div><div class="value ${state.budget<0?'neg':''}">${fmt(state.budget)} рублей</div></div>
+    </div>
+    <h2 class="title">Ваше решение</h2>
+    <p class="desc">${stepData.desc}</p>
+    <div class="options">${optionsHtml}</div>
+  `;
+}
+
+function chooseOption(key) {
+  const stepData = steps[state.step];
+  const opt = stepData.options.find(o => o.key === key);
+  if (opt.cost < 0 && state.budget < Math.abs(opt.cost)) return;
+  state.budget += opt.cost;
+  if (opt.cost < 0) state.totalSpent += Math.abs(opt.cost);
+  const explanation = opt.resolve(state);
+  state.decisionLog.push({
+    stepNum: state.step + 1, role: stepData.role,
+    decision: `${opt.key}) ${opt.label}`,
+    priceAtStep: costPerTonneNow(state)
+  });
+  showResult(stepData.role, explanation, opt.cost);
+}
+
+function renderEventStep() {
+  const stepData = steps[state.step];
+  app.innerHTML = `
+    <div class="header"><div class="logo">${state.teamName.toUpperCase()}</div></div>
+    <div class="step-label">${stepHeader(stepData.phase)}</div>
+    ${professionCardHtml(stepData, true)}
+    <div class="budget-box">
+      <div><div class="label">Текущий бюджет</div><div class="value ${state.budget<0?'neg':''}">${fmt(state.budget)} рублей</div></div>
+    </div>
+    <p class="desc">Пришло время узнать, как решение про ремонт печи отразилось на реальной работе. Нажмите, чтобы посмотреть результат.</p>
+    <button class="next-btn" onclick="triggerEvent()">Проверить</button>
+  `;
+}
+
+function triggerEvent() {
+  const stepData = steps[state.step];
+  const result = resolveEvent(state);
+  const decisionText = result.delta < 0 ? "Авария произошла, потребовался экстренный ремонт" : "Обошлось без аварии";
+  state.decisionLog.push({
+    stepNum: state.step + 1, role: stepData.role, decision: decisionText,
+    priceAtStep: costPerTonneNow(state)
+  });
+  showResult(stepData.role, result.text, result.delta);
+}
+
+function renderForceMajeureStep() {
+  const stepData = steps[state.step];
+  const opts = buildForceMajeureOptions(state);
+  const optionsHtml = opts.map(opt => {
+    const disabled = opt.cost < 0 && state.budget < Math.abs(opt.cost);
+    return `
+    <button class="opt-btn${disabled ? ' disabled' : ''}" ${disabled ? 'data-dis="1"' : `onclick="chooseForceMajeureOption('${opt.key}')"`}>
+      <div class="main-line">${opt.key}) ${opt.label}</div>
+      <div class="price-line">Цена: ${opt.cost === 0 ? "0 рублей" : fmt(opt.cost) + " рублей"}${disabled ? " — не хватает средств" : ""}</div>
+      <div class="hint-line">${opt.hint}</div>
+    </button>
+  `;
+  }).join("");
+
+  app.innerHTML = `
+    <div class="header"><div class="logo">${state.teamName.toUpperCase()}</div></div>
+    <div class="step-label">${stepHeader(stepData.phase)}</div>
+    <div class="profession-card alert">
+      <div class="role-tag">Внеплановая ситуация</div>
+      <div class="role-name">Логист снова принимает решение</div>
+      <div class="role-desc">Из-за паводка размыло участок железной дороги, по которому должна пройти ваша партия. Это форс-мажор: событие, которое невозможно было предвидеть. Но то, насколько легко из него выйти, зависит от решения, принятого на этапе отправки.</div>
+    </div>
+    <div class="glossary-box">
+      <div class="g-title">Что означают эти слова</div>
+      <div class="g-item"><b>Форс-мажор</b>: непредвиденное чрезвычайное обстоятельство, которое невозможно было заранее предсказать или предотвратить, например природная стихия или авария на инфраструктуре.</div>
+    </div>
+    <div class="context-box"><b>Напоминание о прошлом решении:</b><br>Способ доставки, выбранный логистом ранее: <b>${state.logisticsChoiceLabel}</b>. Репутация цеха сейчас: <b>${reputationLabel(state.reputation)}</b>.</div>
+    <div class="budget-box">
+      <div><div class="label">Текущий бюджет</div><div class="value ${state.budget<0?'neg':''}">${fmt(state.budget)} рублей</div></div>
+    </div>
+    <h2 class="title">Как поступить?</h2>
+    <div class="options">${optionsHtml}</div>
+  `;
+}
+
+function chooseForceMajeureOption(key) {
+  const stepData = steps[state.step];
+  const opts = buildForceMajeureOptions(state);
+  const opt = opts.find(o => o.key === key);
+  if (opt.cost < 0 && state.budget < Math.abs(opt.cost)) return;
+  state.budget += opt.cost;
+  if (opt.cost < 0) state.totalSpent += Math.abs(opt.cost);
+  const result = resolveForceMajeure(state, key);
+  state.decisionLog.push({
+    stepNum: state.step + 1, role: "Логист (форс-мажор)",
+    decision: `${opt.key}) ${opt.label}`,
+    priceAtStep: costPerTonneNow(state)
+  });
+  showResult("Форс-мажор преодолён", result.text, opt.cost);
+}
+
+function renderSaleStep() {
+  const stepData = steps[state.step];
+  const opts = buildSaleOptions(state);
+  const optionsHtml = opts.map(opt => `
+    <button class="opt-btn" onclick="chooseSaleOption('${opt.key}')">
+      <div class="main-line">${opt.key}) ${opt.label}</div>
+      <div class="hint-line">${opt.hint}</div>
+    </button>
+  `).join("");
+
+  app.innerHTML = `
+    <div class="header"><div class="logo">${state.teamName.toUpperCase()}</div></div>
+    <div class="step-label">${stepHeader(stepData.phase)}</div>
+    ${professionCardHtml(stepData)}
+    <div class="context-box"><b>Репутация цеха у покупателей:</b><br>${reputationLabel(state.reputation)}.</div>
+    <div class="budget-box">
+      <div><div class="label">Текущий бюджет</div><div class="value ${state.budget<0?'neg':''}">${fmt(state.budget)} рублей</div></div>
+    </div>
+    <p class="desc">Прокат готов к отгрузке. Выберите, как продать партию.</p>
+    <div class="options">${optionsHtml}</div>
+  `;
+}
+
+function chooseSaleOption(key) {
+  const stepData = steps[state.step];
+  const opts = buildSaleOptions(state);
+  const opt = opts.find(o => o.key === key);
+  let text = "";
+  let decisionText = `${opt.key}) ${opt.label}`;
+  if (opt.guaranteed) {
+    state.salePrice = opt.price;
+    text = `Сделка заключена по цене ${fmt(opt.price)} рублей за тонну.`;
+  } else if (opt.risky) {
+    const lucky = Math.random() < 0.5;
+    state.salePrice = lucky ? randInt(60000,75000) : randInt(28000,38000);
+    text = lucky
+      ? `Удача на вашей стороне. Менеджер нашёл покупателя, готового платить ${fmt(state.salePrice)} рублей за тонну.`
+      : `К сожалению, пришлось согласиться на скидку: всего ${fmt(state.salePrice)} рублей за тонну.`;
+    decisionText += ` (итог: ${fmt(state.salePrice)} руб/тонна)`;
+  }
+  state.decisionLog.push({
+    stepNum: state.step + 1, role: stepData.role, decision: decisionText,
+    priceAtStep: costPerTonneNow(state)
+  });
+  showResult(stepData.role, text, 0);
+}
+
+function showResult(roleName, explanation, delta) {
+  const deltaClass = delta > 0 ? "pos" : (delta < 0 ? "neg" : "");
+  const deltaSign = delta > 0 ? "+" : "";
+  const showDelta = delta !== 0 && delta !== null && delta !== undefined;
+  app.innerHTML = `
+    <div class="header"><div class="logo">${state.teamName.toUpperCase()}</div></div>
+    <div class="result-box">
+      <div class="choice">Результат решения: ${roleName}</div>
+      ${showDelta ? `<div class="delta ${deltaClass}">${deltaSign}${fmt(delta)} рублей</div>` : ""}
+      <div class="expl">${explanation}</div>
+    </div>
+    <div class="budget-box">
+      <div><div class="label">Бюджет сейчас</div><div class="value ${state.budget<0?'neg':''}">${fmt(state.budget)} рублей</div></div>
+    </div>
+    <button class="next-btn" onclick="nextStep()">Дальше</button>
+  `;
+}
+
+function nextStep() {
+  state.step++;
+  if (state.step >= steps.length) { renderFinal(); } else { renderStep(); }
+}
+
+function renderFinal() {
+  let defectPct = clamp(Math.round(state.defect), 0, 70);
+  let volume = Math.max(0, state.volume);
+  let breakdown = [];
+  let finalBudget = state.budget;
+  let saleInfo = "";
+  let goodVolume = 0;
+  let pricePerTonne = 0;
+  let contractFailed = false;
+
+  if (defectPct >= DEFECT_FAIL_THRESHOLD) {
+    finalBudget -= CONTRACT_FINE;
+    state.totalSpent += CONTRACT_FINE;
+    contractFailed = true;
+    breakdown.push({label:"Брак партии", value: defectPct + "%"});
+    breakdown.push({label:"Покупатель отказался от партии, неустойка", value: "минус " + fmt(CONTRACT_FINE) + " рублей"});
+    breakdown.push({label:"Выручка от продажи", value: "0 рублей, партия не продана"});
+    saleInfo = "Партия оказалась слишком бракованной, покупатель расторг сделку.";
+    goodVolume = 0;
+  } else {
+    goodVolume = volume * (1 - defectPct/100);
+    if (state.logisticsLoss > 0) goodVolume *= (1 - Math.min(state.logisticsLoss,90)/100);
+    if (state.storageLoss > 0) goodVolume *= (1 - Math.min(state.storageLoss,90)/100);
+    goodVolume = Math.round(goodVolume);
+    pricePerTonne = (state.salePrice || 50000) + state.priceBonus;
+    let revenue = goodVolume * pricePerTonne;
+    finalBudget += revenue;
+    breakdown.push({label:"Брак партии", value: defectPct + "%"});
+    breakdown.push({label:"Годная продукция", value: goodVolume + " тонн"});
+    breakdown.push({label:"Цена за тонну", value: fmt(pricePerTonne) + " рублей"});
+    breakdown.push({label:"Выручка от продажи", value: "плюс " + fmt(revenue) + " рублей"});
+    saleInfo = "Партия успешно продана.";
+  }
+
+  const profit = finalBudget - START_BUDGET;
+  const finalClass = finalBudget >= 0 ? "pos" : "neg";
+  const breakdownHtml = breakdown.map(b => `<div><span>${b.label}</span><span>${b.value}</span></div>`).join("");
+
+  const volumeForCost = goodVolume > 0 ? goodVolume : Math.max(volume,1);
+  const costPerTonne = state.totalSpent / volumeForCost;
+  const marginPerTonne = pricePerTonne > 0 ? pricePerTonne - costPerTonne : null;
+
+  const costGlossary = `
+    <div class="cost-glossary">
+      <b>Себестоимость</b>: все расходы на производство одной тонны стали, без учёта прибыли.<br>
+      <b>Маржа</b>: разница между ценой продажи и себестоимостью, то есть чистая прибыль на одну тонну.
+      ${contractFailed ? `<br><b>Неустойка</b>: штраф, который платит продавец, если не выполнил условия договора.` : ""}
+    </div>
+  `;
+
+  const costHtml = `
+    <div class="cost-title">Из чего складывается цена вашей стали</div>
+    ${costGlossary}
+    <div class="cost-box">
+      <div><span>Суммарные затраты на партию</span><span>${fmt(state.totalSpent)} рублей</span></div>
+      <div><span>Готовая продукция</span><span>${volumeForCost} тонн</span></div>
+      <div><span>Себестоимость одной тонны</span><span>${fmt(costPerTonne)} рублей</span></div>
+      ${pricePerTonne > 0 ? `<div><span>Цена продажи одной тонны</span><span>${fmt(pricePerTonne)} рублей</span></div>
+      <div><span>Маржа на тонну</span><span>${marginPerTonne>=0?"плюс ":"минус "}${fmt(Math.abs(marginPerTonne))} рублей</span></div>` :
+      `<div><span>Цена продажи</span><span>партия не продана</span></div>`}
+    </div>
+  `;
+
+  const decisionsHtml = state.decisionLog.map(entry => `
+    <div class="decision-recap">
+      <div class="d-step">Шаг ${entry.stepNum}</div>
+      <div class="d-role">${entry.role}</div>
+      <div class="d-choice">Решение команды: ${entry.decision}</div>
+      <div class="d-price">Расчётная цена тонны на этом этапе: ${fmt(entry.priceAtStep)} рублей</div>
+    </div>
+  `).join("");
+
+  const thanksHtml = `
+    <div class="thanks-box">
+      <div class="thanks-title">Спасибо большое!</div>
+      В симуляции вы побывали на месте девяти разных специалистов настоящего комбината, от горного инженера до коммерческого директора.
+      В реальности технологический процесс отлаживается годами, ведь всегда сложные проекты — это совместная работа многих людей.
+    </div>
+  `;
+
+  app.innerHTML = `
+    <div class="header"><div class="logo">${state.teamName.toUpperCase()}</div></div>
+    <div class="final-title">Итог работы цеха</div>
+    <p class="desc">${saleInfo}</p>
+    <div class="final-sum ${finalClass}">${fmt(finalBudget)} рублей</div>
+    <div class="step-label" style="text-align:center; margin-bottom:14px;">
+      Итог по сравнению со стартом: <b style="color:${profit>=0?'#63d471':'#ff5b5b'}">${profit>=0?'плюс ':'минус '}${fmt(Math.abs(profit))} рублей</b>
+    </div>
+    <div class="breakdown">${breakdownHtml}</div>
+    ${costHtml}
+    <p class="desc" style="margin-top:16px; margin-bottom:8px;"><b>Полный план решений вашей команды, пригодится для разбора с педагогом. Обратите внимание на колонку с расчётной ценой тонны на каждом этапе, это показывает, как решения постепенно меняли стоимость партии:</b></p>
+    ${decisionsHtml}
+    ${thanksHtml}
+    <div class="hint">Запишите итоговую сумму, ${fmt(finalBudget)} рублей, на доску педагогу для общего рейтинга.</div>
+    <button class="next-btn" onclick="renderRestartGate()" style="margin-top:14px;">Пройти заново</button>
+  `;
+}
+
+window.checkPassword = checkPassword;
+window.checkRestartPassword = checkRestartPassword;
+window.startGame = startGame;
+window.chooseOption = chooseOption;
+window.triggerEvent = triggerEvent;
+window.chooseForceMajeureOption = chooseForceMajeureOption;
+window.chooseSaleOption = chooseSaleOption;
+window.nextStep = nextStep;
+window.renderPasswordGate = renderPasswordGate;
+window.renderRestartGate = renderRestartGate;
+
+renderPasswordGate();
+</script>
+</body>
+</html>
